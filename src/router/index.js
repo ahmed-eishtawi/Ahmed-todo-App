@@ -1,8 +1,8 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import TodoList from "../views/TodoList.vue";
 import About from "../views/About.vue";
-import AddTodo from '../views/ManageTodo/AddTodo.vue'
-import EditTodo from '../views/ManageTodo/EditTodo.vue'
+import AddTodo from "../views/ManageTodo/AddTodo.vue";
+import EditTodo from "../views/ManageTodo/EditTodo.vue";
 
 const routes = [
   {
@@ -21,9 +21,10 @@ const routes = [
     component: AddTodo,
   },
   {
-    path: "/edit-todo",
+    path: "/edit-todo/:id",
     name: "EditTodo",
     component: EditTodo,
+    props: true,
   },
 ];
 

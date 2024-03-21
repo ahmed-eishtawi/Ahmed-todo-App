@@ -1,6 +1,6 @@
 <template>
-  <v-row align="center" justify="center">
-    <v-col sm="12" lg="10">
+  <v-row>
+    <v-col cols="12">
       <v-card
         class="ma-auto"
         prepend-icon="mdi-format-list-checks"

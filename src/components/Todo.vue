@@ -21,6 +21,7 @@
               <router-link
                 :to="{
                   name: 'EditTodo',
+                  params: { id: todo.id },
                 }"
                 ><span class="material-icons edit">edit</span></router-link
               >

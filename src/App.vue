@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire" :theme="isDarkMode ? 'dark' : 'light'">
+  <v-app id="inspire" :theme="themeStore.getTheme">
     <!-- Navigation -->
     <v-navigation-drawer v-model="drawer" app>
       <v-list dense nav>
@@ -39,11 +39,11 @@
           class="ma-auto pe-5"
           color="blue-accent-3"
           base-color="blue-accent-3"
-          v-model="isDarkMode"
+          v-model="themeStore.isDarkMode"
         >
           <template v-slot:append>
             <span
-              v-if="isDarkMode"
+              v-if="themeStore.isDarkMode"
               class="material-icons light_mode"
               style="color: #2979ff"
             >
@@ -79,9 +79,10 @@
 <script setup>
 import { ref } from "vue";
 import Footer from "./components/Footer.vue";
+import { useThemeStore } from "./stores/themeStore.js";
 
 const drawer = ref(null);
-const isDarkMode = ref(true);
+const themeStore = useThemeStore();
 
 const items = [
   { title: "Todo", icon: "mdi-format-list-checks", to: "/" },
@@ -89,16 +90,7 @@ const items = [
 ];
 </script>
 
-//
-<script>
-// export default {
-//   data: () => ({ drawer: null }),
-// };
-//
-</script>
-
 <style>
-
 .rowMargin {
   margin: -0.5px;
 }
