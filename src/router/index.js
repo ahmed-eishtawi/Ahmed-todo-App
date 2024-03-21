@@ -1,17 +1,29 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Todo from "../views/Todo.vue";
+import TodoList from "../views/TodoList.vue";
+import About from "../views/About.vue";
+import AddTodo from '../views/ManageTodo/AddTodo.vue'
+import EditTodo from '../views/ManageTodo/EditTodo.vue'
 
 const routes = [
   {
     path: "/",
-    name: "Todo",
-    component: Todo,
+    name: "TodoList",
+    component: TodoList,
   },
   {
     path: "/about",
     name: "About",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue"),
+    component: About,
+  },
+  {
+    path: "/add-todo",
+    name: "AddTodo",
+    component: AddTodo,
+  },
+  {
+    path: "/edit-todo",
+    name: "EditTodo",
+    component: EditTodo,
   },
 ];
 

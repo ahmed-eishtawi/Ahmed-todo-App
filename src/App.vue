@@ -1,11 +1,12 @@
 <template>
   <v-app id="inspire" :theme="isDarkMode ? 'dark' : 'light'">
+    <!-- Navigation -->
     <v-navigation-drawer v-model="drawer" app>
       <v-list dense nav>
         <v-list-item
           title="Ahmed Todo App"
           subtitle="The Best Todo App"
-          base-color="primary"
+          base-color="blue-accent-3"
         ></v-list-item>
         <v-divider></v-divider>
         <v-list-item
@@ -13,11 +14,11 @@
           :key="index"
           link
           :to="item.to"
-          color="primary"
+          color="blue-accent-3"
         >
           <v-list-item-content class="flex">
             <v-list-item-icon class="me-5">
-              <v-icon :icon="item.icon" base-color="#000"></v-icon>
+              <v-icon :icon="item.icon" base-color="grey-darken-4"></v-icon>
             </v-list-item-icon>
 
             <v-list-item-title>
@@ -27,24 +28,24 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-
+    <!-- App Bar -->
     <v-app-bar>
       <v-app-bar-nav-icon
         @click="drawer = !drawer"
-        color="primary"
+        color="blue-accent-3"
       ></v-app-bar-nav-icon>
       <template v-slot:append>
         <v-switch
           class="ma-auto pe-5"
-          color="primary"
-          base-color="primary"
+          color="blue-accent-3"
+          base-color="blue-accent-3"
           v-model="isDarkMode"
         >
           <template v-slot:append>
             <span
               v-if="isDarkMode"
               class="material-icons light_mode"
-              style="color: #1867c0"
+              style="color: #2979ff"
             >
               light_mode
             </span>
@@ -58,24 +59,29 @@
           </template>
         </v-switch>
       </template>
-      <v-app-bar-title> Todo </v-app-bar-title>
+      <v-app-bar-title>
+        <span>{{ $route.name }}</span>
+      </v-app-bar-title>
     </v-app-bar>
-
-    <v-main>
-      <v-row>
+    <!-- Main Content -->
+    <v-main class="d-flex flex-column">
+      <v-row class="rowMargin">
         <v-col>
           <router-view></router-view>
         </v-col>
       </v-row>
+      <Footer />
     </v-main>
   </v-app>
 </template>
+
 /* */
 <script setup>
 import { ref } from "vue";
+import Footer from "./components/Footer.vue";
 
 const drawer = ref(null);
-const isDarkMode = ref(false);
+const isDarkMode = ref(true);
 
 const items = [
   { title: "Todo", icon: "mdi-format-list-checks", to: "/" },
@@ -91,7 +97,11 @@ const items = [
 //
 </script>
 
-<style scoped>
+<style>
+
+.rowMargin {
+  margin: -0.5px;
+}
 .flex {
   display: flex;
   justify-content: start;
