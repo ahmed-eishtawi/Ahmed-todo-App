@@ -1,4 +1,4 @@
-# vuetify-todo
+# Ahmed-Todo-App
 
 ## Project setup
 ```
