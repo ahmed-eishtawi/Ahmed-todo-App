@@ -45,6 +45,7 @@
                   :rules="titleRules"
                   label="Title"
                   required
+                  @keydown.enter="addTodo"
                 ></v-text-field>
               </v-col>
 
@@ -111,7 +112,7 @@ const titleRules = ref([
     return "Title is required";
   },
   (value) => {
-    if (value.length > 3) return true;
+    if (value.length > 2) return true;
 
     return "Title must be at least 3 characters.";
   },
@@ -122,17 +123,20 @@ const titleRules = ref([
 */
 
 const addTodo = async () => {
-  loading.value = true;
-  const todo = {
-    title: title.value,
-    details: details.value,
-    isCompleted: false,
-  };
-  const docRef = await addDoc(collection(db, "todos"), todo);
-  // show dialog
-  loading.value = false;
-  dialog.value = true;
-  title.value = "";
-  details.value = "";
+  if (title.value.length > 2) {
+    loading.value = true;
+    const todo = {
+      title: title.value,
+      details: details.value,
+      isCompleted: false,
+      date: Date.now(),
+    };
+    const docRef = await addDoc(collection(db, "todos"), todo);
+    // show dialog
+    loading.value = false;
+    dialog.value = true;
+    title.value = "";
+    details.value = "";
+  }
 };
 </script>

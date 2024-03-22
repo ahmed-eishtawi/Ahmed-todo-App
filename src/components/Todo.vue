@@ -22,16 +22,17 @@
                 :to="{
                   name: 'EditTodo',
                   params: { id: todo.id },
+                  props: { todo: todo },
                 }"
                 ><span class="material-icons edit">edit</span></router-link
               >
               <span
-                @click="deleteTodo"
+                @click="deleteTodo(todo.id)"
                 class="material-icons cursor-pointer delete"
                 >delete</span
               >
               <span
-                @click="todo.isCompleted = !todo.isCompleted"
+                @click="completeTodo(todo)"
                 class="material-icons cursor-pointer complete"
               >
                 done
@@ -50,13 +51,21 @@
 
 <script setup>
 import { ref, defineProps } from "vue";
+import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 defineProps(["todo"]);
 
 /*
   methods
 */
-const deleteTodo = () => {};
+const deleteTodo = (id) => deleteDoc(doc(db, "todos", id));
+
+const completeTodo = (todo) => {
+  updateDoc(doc(db, "todos", todo.id), {
+    isCompleted: !todo.isCompleted,
+  });
+};
 
 const showDetails = ref(false);
 </script>

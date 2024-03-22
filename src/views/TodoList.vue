@@ -32,8 +32,19 @@
 
           <!-- List -->
           <v-main>
-            <v-row dense>
-              <v-col cols="12" class="">
+            <v-row dense color="">
+              <!-- When there is no todo, show this -->
+              <!-- <v-card v-if="!todos.length" class="w-100 py-10">
+                <div
+                  class="d-flex flex-column justify-space-evenly align-center h-75"
+                >
+                  <h1 class="text-blue-accent-3 h1 text-center mb-3">
+                    No Todo yet. 📃
+                  </h1>
+                  <v-img class="w-100 h-75" src="../img/EmptyTodo.svg" alt="" />
+                </div>
+              </v-card> -->
+              <v-col v-if="todos.length" cols="12">
                 <Todo v-for="todo in todos" :key="todo.id" :todo="todo" />
               </v-col>
             </v-row>
@@ -45,30 +56,35 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onBeforeMount, onMounted, ref } from "vue";
 import Todo from "../components/Todo.vue";
-import { collection, onSnapshot } from "firebase/firestore";
+import { useThemeStore } from "../stores/themeStore.js";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
 /*
   Variables
 */
 const showDetails = ref(false);
-
+const theme = useThemeStore();
 const todos = ref([]);
+/* */
+const todoCollectionRef = collection(db, "todos");
+const todoCollectionQuery = query(todoCollectionRef, orderBy("date", "desc"));
 
 /*
   lifeCycleHooks
 */
-onMounted(() => {
-  onSnapshot(collection(db, "todos"), (querySnapshot) => {
-    let temp = []
+
+onBeforeMount(() => {
+  onSnapshot(todoCollectionQuery, (querySnapshot) => {
+    let temp = [];
     querySnapshot.forEach((doc) => {
-      const todo={
+      const todo = {
         id: doc.id,
         title: doc.data().title,
         details: doc.data().details,
         isCompleted: doc.data().isCompleted,
-      }
+      };
       temp.push(todo);
     });
     todos.value = temp;

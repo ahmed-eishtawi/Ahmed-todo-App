@@ -21,7 +21,7 @@ const routes = [
     component: AddTodo,
   },
   {
-    path: "/edit-todo/:id",
+    path: "/todo/:id",
     name: "EditTodo",
     component: EditTodo,
     props: true,
