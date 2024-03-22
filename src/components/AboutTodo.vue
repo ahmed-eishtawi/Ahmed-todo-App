@@ -8,10 +8,10 @@
         color="blue-accent-3 rounded-lg mt-15"
       >
         <template v-slot:title>
-          <div class="">Todo App Made</div>
+          <div class="">Ahmed Todo App</div>
         </template>
         <v-card-text class="text-center mt-4"
-          >Simple Project And it`s Open Source <strong>:)</strong></v-card-text
+          >Simple App And it`s Open Source <strong>:)</strong></v-card-text
         >
       </v-card>
       <v-card
@@ -22,7 +22,7 @@
         prepend-icon="mdi-github"
         rel="noopener"
         target="_blank"
-        title="Vuetify on GitHub"
+        title="Ahmed Todo on GitHub"
         color="black"
       ></v-card>
     </v-col>
