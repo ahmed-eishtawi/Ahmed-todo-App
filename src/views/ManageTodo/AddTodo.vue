@@ -96,6 +96,7 @@
 import { ref } from "vue";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "@/firebase";
+import { useRouter } from "vue-router";
 
 /*
   Variables
@@ -118,6 +119,7 @@ const titleRules = ref([
   },
 ]);
 
+const router = useRouter();
 /*
   Methods
 */
@@ -137,6 +139,9 @@ const addTodo = async () => {
     dialog.value = true;
     title.value = "";
     details.value = "";
+    setTimeout(() => {
+      router.push({ name: "TodoList" });
+    }, 1500);
   }
 };
 </script>

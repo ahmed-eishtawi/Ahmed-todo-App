@@ -98,6 +98,7 @@
 import { defineProps, onMounted, ref } from "vue";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
+import { useRouter } from "vue-router";
 
 /*
   Props
@@ -118,12 +119,13 @@ const titleRules = ref([
     return "Title is required";
   },
   (value) => {
-    if (value.length > 2) return true;
+    if (value.length > 3) return true;
 
     return "Title must be at least 3 characters.";
   },
 ]);
 
+const router = useRouter();
 /*
   lifeCycleHooks
 */
@@ -139,7 +141,7 @@ onMounted(async () => {
   methods
 */
 const editTodo = async (todo) => {
-  if (title.length) {
+  if (!title.length) {
     if (title.value.length > 2) {
       loading.value = true;
       await updateDoc(doc(db, "todos", props.id), {
@@ -150,6 +152,9 @@ const editTodo = async (todo) => {
       dialog.value = true;
       title.value = "";
       details.value = "";
+      setTimeout(() => {
+        router.push({ name: "TodoList" });
+      }, 1500);
     }
   }
 };
