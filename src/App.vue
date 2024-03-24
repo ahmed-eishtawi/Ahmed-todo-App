@@ -1,8 +1,17 @@
 <template>
-  <v-app id="inspire" :theme="themeStore.getTheme">
+  <v-app
+    id="inspire"
+    :theme="themeStore.getTheme"
+  >
     <!-- Navigation -->
-    <v-navigation-drawer v-model="drawer" app>
-      <v-list dense nav>
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+    >
+      <v-list
+        dense
+        nav
+      >
         <v-list-item
           title="Ahmed Todo App"
           subtitle="The Best Todo App"
@@ -18,7 +27,10 @@
         >
           <v-list-item-content class="flex">
             <v-list-item-icon class="me-5">
-              <v-icon :icon="item.icon" base-color="grey-darken-4"></v-icon>
+              <v-icon
+                :icon="item.icon"
+                base-color="grey-darken-4"
+              ></v-icon>
             </v-list-item-icon>
 
             <v-list-item-title>
@@ -35,29 +47,31 @@
         color="blue-accent-3"
       ></v-app-bar-nav-icon>
       <template v-slot:append>
-        <v-switch
-          class="ma-auto pe-5"
-          color="blue-accent-3"
-          base-color="blue-accent-3"
-          v-model="themeStore.isDarkMode"
+        <v-btn
+          variant="text"
+          :ripple="false"
+          size="xl"
+          rounded="circle"
+          class="mr-6"
+          @click="themeStore.toggleTheme"
         >
-          <template v-slot:append>
+          <v-icon v-if="themeStore.isDarkMode">
             <span
-              v-if="themeStore.isDarkMode"
               class="material-icons light_mode"
               style="color: #2979ff"
             >
               light_mode
             </span>
+          </v-icon>
+          <v-icon v-else>
             <span
-              v-else
               class="material-icons dark_mode"
               style="color: #1867c0"
             >
               dark_mode
             </span>
-          </template>
-        </v-switch>
+          </v-icon>
+        </v-btn>
       </template>
       <v-app-bar-title>
         <span>{{ $route.name }}</span>

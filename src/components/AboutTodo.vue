@@ -8,7 +8,7 @@
         color="blue-accent-3 rounded-lg mt-15"
       >
         <template v-slot:title>
-          <div class="">Ahmed Todo App</div>
+          <div>Ahmed Todo App</div>
         </template>
         <v-card-text class="text-center mt-4"
           >Simple App And it`s Open Source <strong>:)</strong></v-card-text

@@ -1,10 +1,16 @@
 <template>
-  <div class="todo" :class="{ completed: todo.isCompleted }">
+  <div
+    class="todo"
+    :class="{ completed: todo.isCompleted }"
+  >
     <v-list lines="three">
       <v-list-item>
         <div>
           <v-list-item-title class="mb-2 d-flex justify-space-between">
-            <div>
+            <div
+              max-width="300"
+              class="d-inline overflow-auto"
+            >
               <h4
                 @click="showDetails = !showDetails"
                 class="cursor-pointer"
@@ -12,7 +18,10 @@
               >
                 {{ todo.title }}
               </h4>
-              <v-tooltip activator="parent" location="end">
+              <v-tooltip
+                activator="parent"
+                location="end"
+              >
                 Show Details
               </v-tooltip>
             </div>
