@@ -49,13 +49,13 @@
       <template v-slot:append>
         <v-btn
           variant="text"
-          :ripple="false"
+          :ripple="true"
           size="xl"
           rounded="circle"
-          class="mr-6"
+          class="mr-6 pa-3"
           @click="themeStore.toggleTheme"
         >
-          <v-icon v-if="themeStore.isDarkMode">
+          <v-icon v-if="!themeStore.isDarkMode">
             <span
               class="material-icons light_mode"
               style="color: #2979ff"
