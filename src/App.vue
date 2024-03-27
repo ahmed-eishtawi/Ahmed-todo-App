@@ -7,23 +7,29 @@
     <v-navigation-drawer
       v-model="drawer"
       app
+      :width="320"
     >
+      <v-list>
+        <v-list-item prepend-avatar="Pic.jpg">
+          <v-list-item-title class="mb-1"> Ahmed Eishtawi </v-list-item-title>
+          <v-list-item-subtitle>
+            ahmed02.eishtawi@gmail.com
+          </v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
+      <v-divider class="mt-n1"></v-divider>
+      <!--  -->
       <v-list
         dense
         nav
       >
-        <v-list-item
-          title="Ahmed Todo App"
-          subtitle="The Best Todo App"
-          base-color="blue-accent-3"
-        ></v-list-item>
-        <v-divider></v-divider>
         <v-list-item
           v-for="(item, index) in items"
           :key="index"
           link
           :to="item.to"
           color="blue-accent-3"
+          class="my-2"
         >
           <v-list-item-content class="flex">
             <v-list-item-icon class="me-5">
@@ -43,6 +49,7 @@
     <!-- App Bar -->
     <v-app-bar>
       <v-app-bar-nav-icon
+        :icon="drawer ? 'mdi-arrow-left-circle' : 'mdi-arrow-right-circle'"
         @click="drawer = !drawer"
         color="blue-accent-3"
       ></v-app-bar-nav-icon>

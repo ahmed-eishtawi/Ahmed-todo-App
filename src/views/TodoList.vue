@@ -1,9 +1,21 @@
 <template>
   <v-row class="py-3">
-    <v-col cols="12" sm="12" lg="7" class="mx-auto">
-      <v-card class="mb-xs-5 mb-lg-0" color="grey-lighten-3" width="100%">
+    <v-col
+      cols="12"
+      sm="12"
+      lg="7"
+      class="mx-auto"
+    >
+      <v-card
+        class="mb-xs-5 mb-lg-0"
+        color="grey-lighten-3"
+        width="100%"
+      >
         <v-layout>
-          <v-dialog v-model="dialog" width="auto">
+          <v-dialog
+            v-model="dialog"
+            width="auto"
+          >
             <v-card
               max-width="450"
               append-icon="$info"
@@ -34,22 +46,22 @@
           <!-- Todo Bar -->
           <v-app-bar color="blue-accent-3">
             <v-app-bar-title>Todo</v-app-bar-title>
-
+            <v-btn
+              to="/add-todo"
+              color="white"
+              icon="mdi-plus"
+            >
+            </v-btn>
             <v-btn icon>
               <v-menu transition="slide-y-transition">
                 <template v-slot:activator="{ props }">
                   <v-icon v-bind="props">mdi-dots-vertical</v-icon>
                 </template>
                 <v-list class="pa-0">
-                  <router-link :to="{ name: 'AddTodo' }">
-                    <v-list-item append-icon="mdi-plus">
-                      <v-list-item-title class="cursor-pointer"
-                        >Add Todo</v-list-item-title
-                      >
-                    </v-list-item>
-                  </router-link>
                   <v-list-item append-icon="mdi-delete">
-                    <v-list-item-title @click="clearTodo" class="cursor-pointer"
+                    <v-list-item-title
+                      @click="clearTodo"
+                      class="cursor-pointer"
                       >Clear All Todo</v-list-item-title
                     >
                   </v-list-item>
@@ -60,7 +72,10 @@
 
           <!-- List -->
           <v-main>
-            <v-row dense color="">
+            <v-row
+              dense
+              color=""
+            >
               <!-- When there is no todo, show this -->
               <!-- <v-card v-if="!todos.length" class="w-100 py-10">
                 <div
@@ -72,9 +87,19 @@
                   <v-img class="w-100 h-75" src="../img/EmptyTodo.svg" alt="" />
                 </div>
               </v-card> -->
-              <v-col v-if="todos.length" cols="12">
-                <transition-group name="fade" mode="out-in">
-                  <Todo v-for="todo in todos" :key="todo.id" :todo="todo" />
+              <v-col
+                v-if="todos.length"
+                cols="12"
+              >
+                <transition-group
+                  name="fade"
+                  mode="out-in"
+                >
+                  <Todo
+                    v-for="todo in todos"
+                    :key="todo.id"
+                    :todo="todo"
+                  />
                 </transition-group>
               </v-col>
             </v-row>
@@ -142,6 +167,10 @@ const clearTodo = async () => {
 
 <style scoped>
 .v-list a {
+  text-decoration: none;
+  color: inherit;
+}
+.v-btn a {
   text-decoration: none;
   color: inherit;
 }
