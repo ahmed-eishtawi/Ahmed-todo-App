@@ -1,10 +1,16 @@
 <template>
   <v-row class="py-3 align-center justify-center">
-    <v-col cols="12" lg="6">
+    <v-col
+      cols="12"
+      lg="6"
+    >
       <v-card class="w-100">
         <v-form v-model="valid">
           <v-container>
-            <v-dialog v-model="dialog" width="auto">
+            <v-dialog
+              v-model="dialog"
+              width="auto"
+            >
               <v-card
                 max-width="450"
                 append-icon="$info"
@@ -35,13 +41,18 @@
               </v-card>
             </v-dialog>
             <v-row class="justify-center">
-              <v-col cols="12" sm="10">
+              <v-col
+                cols="12"
+                sm="10"
+              >
                 <h1 class="text-center bg-blue-accent-3 rounded">Edit Todo</h1>
               </v-col>
-              <v-col cols="12" sm="10">
+              <v-col
+                cols="12"
+                sm="10"
+              >
                 <v-text-field
                   v-model="title"
-                  @keydown.enter="editTodo"
                   color="blue-accent-3"
                   clearable
                   clear-icon="$clear"
@@ -51,7 +62,10 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="10">
+              <v-col
+                cols="12"
+                sm="10"
+              >
                 <v-textarea
                   v-model="details"
                   color="blue-accent-3"
@@ -60,9 +74,16 @@
                   label="Details"
                 ></v-textarea>
               </v-col>
-              <v-col cols="12" sm="10">
+              <v-col
+                cols="12"
+                sm="10"
+              >
                 <v-row class="justify-center">
-                  <v-col cols="12" sm="6" class="text-center">
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    class="text-center"
+                  >
                     <v-btn
                       @click="editTodo"
                       :disabled="!valid"
@@ -74,9 +95,13 @@
                       Edit
                     </v-btn>
                   </v-col>
-                  <v-col cols="12" sm="6" class="text-center">
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    class="text-center"
+                  >
                     <v-btn
-                      @click="$router.push({ name: 'TodoList' })"
+                      @click="$router.push({ name: 'Todo List' })"
                       prepend-icon="mdi-arrow-left-circle"
                       color="blue-accent-3"
                       block
@@ -119,7 +144,7 @@ const titleRules = ref([
     return "Title is required";
   },
   (value) => {
-    if (value.length > 3) return true;
+    if (value.length > 2) return true;
 
     return "Title must be at least 3 characters.";
   },
@@ -141,7 +166,8 @@ onMounted(async () => {
   methods
 */
 const editTodo = async (todo) => {
-  if (!title.length) {//فيه خطأ معنديش ليه وقت حاليا
+  if (!title.length) {
+    //فيه خطأ معنديش ليه وقت حاليا
     if (title.value.length > 2) {
       loading.value = true;
       await updateDoc(doc(db, "todos", props.id), {
@@ -153,7 +179,7 @@ const editTodo = async (todo) => {
       title.value = "";
       details.value = "";
       setTimeout(() => {
-        router.push({ name: "TodoList" });
+        router.push({ name: "Todo List" });
       }, 1500);
     }
   }

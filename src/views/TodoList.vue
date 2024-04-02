@@ -73,20 +73,22 @@
           <!-- List -->
           <v-main>
             <v-row
+              v-if="loading"
               dense
               color=""
             >
-              <!-- When there is no todo, show this -->
-              <!-- <v-card v-if="!todos.length" class="w-100 py-10">
-                <div
-                  class="d-flex flex-column justify-space-evenly align-center h-75"
-                >
-                  <h1 class="text-blue-accent-3 h1 text-center mb-3">
-                    No Todo yet. 📃
-                  </h1>
-                  <v-img class="w-100 h-75" src="../img/EmptyTodo.svg" alt="" />
-                </div>
-              </v-card> -->
+              <v-col cols="12">
+                <v-skeleton-loader
+                  class="rounded-0 ma-0 pa-0"
+                  type="list-item, subtitle"
+                ></v-skeleton-loader>
+              </v-col>
+            </v-row>
+            <v-row
+              v-else
+              dense
+              color=""
+            >
               <v-col
                 v-if="todos.length"
                 cols="12"
@@ -126,6 +128,7 @@ import { db } from "@/firebase";
 /*
   Variables
 */
+const loading = ref(true);
 let dialog = ref(false); // to show Dialog when the user add Todo
 const showDetails = ref(false);
 const theme = useThemeStore();
@@ -151,6 +154,7 @@ onBeforeMount(() => {
       temp.push(todo);
     });
     todos.value = temp;
+    loading.value = false;
   });
 });
 
@@ -177,7 +181,7 @@ const clearTodo = async () => {
 /* transition */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.5s ease;
+  transition: opacity 0.3s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
