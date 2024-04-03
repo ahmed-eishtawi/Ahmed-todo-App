@@ -167,8 +167,6 @@ const addTodo = async () => {
     // show dialog
     loading.value = false;
     dialog.value = true;
-    title.value = "";
-    details.value = "";
   }
 };
 </script>

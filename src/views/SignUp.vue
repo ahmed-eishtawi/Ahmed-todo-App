@@ -20,7 +20,9 @@
               icon="mdi-check-circle-outline"
               size="100"
             ></v-icon>
-            <div class="text-h5 font-weight-bold">Added Successfully</div>
+            <div class="text-h5 font-weight-bold">
+              Signed up successfully, you can login to your accout
+            </div>
           </div>
 
           <template v-slot:actions>
@@ -46,7 +48,7 @@
               <h2>Sign Up</h2>
             </v-card-title>
             <v-crad-text>
-              <v-form>
+              <v-form v-model="valid">
                 <v-row class="justify-space-evenly">
                   <v-col>
                     <v-text-field
@@ -56,6 +58,7 @@
                       label="First Name"
                       type="text"
                       variant="solo"
+                      :rules="firstNameRules"
                       v-model="firstName"
                     >
                     </v-text-field>
@@ -68,6 +71,7 @@
                       label="Last Name"
                       type="text"
                       variant="solo"
+                      :rules="lastNameRules"
                       v-model="lastName"
                     >
                     </v-text-field>
@@ -80,6 +84,7 @@
                   label="Email"
                   type="email"
                   variant="solo"
+                  :rules="emailRules"
                   v-model="email"
                 >
                   <template v-slot:prepend-inner>
@@ -91,46 +96,59 @@
                   rounded="xl"
                   color="blue-accent-3"
                   label="password"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   variant="solo"
+                  :rules="passwordRules"
                   v-model="password"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-lock-outline </v-icon>
                   </template>
+                  <template v-slot:append-inner>
+                    <div
+                      @click="showPassword = !showPassword"
+                      class="cursor-pointer"
+                    >
+                      <v-icon
+                        v-if="!showPassword"
+                        color="blue-accent-3"
+                      >
+                        mdi-eye-off-outline
+                      </v-icon>
+                      <v-icon
+                        v-else
+                        color="blue-accent-3"
+                      >
+                        mdi-eye-outline
+                      </v-icon>
+                    </div>
+                  </template>
                 </v-text-field>
-                <!-- maybe i will remove it -->
-                <div class="mt-n2 d-flex justify-end pr-2">
-                  <h5 class="text-blue-accent-3 cursor-pointer">
-                    Forget Password
-                  </h5>
-                </div>
                 <div
                   id="buttons"
                   class="d-flex flex-column my-5"
                 >
                   <v-btn
                     @click.prevent="signUp"
-                    prepend-icon="mdi-login-variant"
                     color="blue-accent-3"
                     rounded="xl"
                     class="mb-6"
                     style="height: 45px"
+                    :loading="loading"
                   >
-                    Sign up
+                    <strong> Sign up </strong>
                   </v-btn>
                   <v-btn
                     @click.prevent="signUpWithGoogle"
                     rounded="xl"
                     class="mb-6"
                     style="height: 45px"
-                    :loading = loading
                   >
                     Sign up With Google
                     <template v-slot:prepend>
                       <v-icon
-                        color="primary"
-                        size="30"
+                        color="blue-accent-3"
+                        size="25"
                       >
                         mdi-google
                       </v-icon>
@@ -149,6 +167,12 @@
                 </div>
               </v-form>
             </v-crad-text>
+            <div
+              v-if="error"
+              class="text-center text-red-accent-4"
+            >
+              <h3>{{ error }}</h3>
+            </div>
           </v-card>
         </v-col>
       </v-row>
@@ -158,12 +182,15 @@
 
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
-import { ref } from "vue";
+import { ref, watch, watchEffect } from "vue";
 import {
   createUserWithEmailAndPassword,
-  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
   sendEmailVerification,
 } from "firebase/auth";
+import { auth } from "../firebase";
+import { useRouter } from "vue-router";
 /*
     Variables
 */
@@ -171,37 +198,94 @@ const themeStore = useThemeStore();
 //
 let dialog = ref(false); // to show Dialog when the user add Todo
 let loading = ref(false); // to show Loading in the button when the user add Todo
+const showPassword = ref(false);
+// user
 const firstName = ref("");
 const lastName = ref("");
 const email = ref("");
 const password = ref("");
-const auth = getAuth();
+const valid = ref(false);
+const error = ref(null);
+const firstNameRules = ref([
+  (value) => {
+    if (value) return true;
+
+    return "First Name is required";
+  },
+]);
+const lastNameRules = ref([
+  (value) => {
+    if (value) return true;
+
+    return "Last Name is required";
+  },
+]);
+const emailRules = ref([
+  (value) => {
+    if (value) return true;
+
+    return "Email is required";
+  },
+  (value) => {
+    if (value.includes("@")) return true;
+    return `Email Must have "@"`;
+  },
+]);
+const passwordRules = ref([
+  (value) => {
+    if (value) return true;
+
+    return "Password is required";
+  },
+  (value) => {
+    if (value.length > 7) return true;
+    return "Password must be at least 6 characters";
+  },
+]);
+// router
+const router = useRouter();
+// watch
+watch(dialog, () => {
+  dialog.value ? "" : router.push({ name: "Login" });
+});
 
 /*
     methods
 */
 const signUp = async () => {
-  try {
-    loading.value = true;
-    const user = await createUserWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
-    auth.currentUser.displayName =
-      firstName.value.trim() + " " + lastName.value.trim();
-    //
-    await sendEmailVerification(auth.currentUser);
-    console.log(user);
-    loading.value = false;
-    dialog.value = true;
-
-  } catch (err) {
-    console.log(err);
+  if (valid.value) {
+    try {
+      loading.value = true;
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        email.value,
+        password.value
+      );
+      res.user.displayName = `${firstName.value} ${lastName.value}`;
+      //
+      await sendEmailVerification(auth.currentUser);
+      console.log(res.user);
+      loading.value = false;
+      dialog.value = true;
+    } catch (err) {
+      error.value = err.message;
+    }
   }
 };
-const signUpWithGoogle = () => {
-  console.log("test");
+const signUpWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const res = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(res);
+    const token = credential.accessToken;
+    const user = res.user;
+    user.displayName = user.displayName;
+    console.log(user);
+    dialog.value = true;
+  } catch (err) {
+    error.value = GoogleAuthProvider.credentialFromError(err);
+    console.log(err);
+  }
 };
 </script>
 

@@ -182,8 +182,6 @@ const editTodo = async (todo) => {
       });
       loading.value = false;
       dialog.value = true;
-      title.value = "";
-      details.value = "";
     }
   }
 };
