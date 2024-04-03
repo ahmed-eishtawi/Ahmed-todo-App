@@ -1,6 +1,38 @@
 <template>
   <v-app :theme="themeStore.getTheme">
     <v-container class="d-flex h-screen">
+      <v-dialog
+        v-model="dialog"
+        width="auto"
+        persistent
+      >
+        <v-card
+          max-width="450"
+          append-icon="$info"
+          title="Done"
+          rounded="lg"
+        >
+          <v-divider></v-divider>
+          <div class="py-3 text-center px-15">
+            <v-icon
+              class="mb-3"
+              color="success"
+              icon="mdi-check-circle-outline"
+              size="100"
+            ></v-icon>
+            <div class="text-h5 font-weight-bold">Added Successfully</div>
+          </div>
+
+          <template v-slot:actions>
+            <v-btn
+              class="ms-auto"
+              text="Ok"
+              color="success"
+              @click="dialog = false"
+            ></v-btn>
+          </template>
+        </v-card>
+      </v-dialog>
       <v-row
         align="center"
         justify="center"
@@ -11,10 +43,36 @@
         >
           <v-card class="px-3 px-lg-10 py-10 elevation-10 elevation-10">
             <v-card-title class="headline text-center text-blue-accent-3 mb-5">
-              <h2>Login</h2>
+              <h2>Sign Up</h2>
             </v-card-title>
             <v-crad-text>
               <v-form>
+                <v-row class="justify-space-evenly">
+                  <v-col>
+                    <v-text-field
+                      clearable
+                      rounded="xl"
+                      color="blue-accent-3"
+                      label="First Name"
+                      type="text"
+                      variant="solo"
+                      v-model="firstName"
+                    >
+                    </v-text-field>
+                  </v-col>
+                  <v-col>
+                    <v-text-field
+                      clearable
+                      rounded="xl"
+                      color="blue-accent-3"
+                      label="Last Name"
+                      type="text"
+                      variant="solo"
+                      v-model="lastName"
+                    >
+                    </v-text-field>
+                  </v-col>
+                </v-row>
                 <v-text-field
                   clearable
                   rounded="xl"
@@ -52,31 +110,23 @@
                   class="d-flex flex-column my-5"
                 >
                   <v-btn
-                    @click.prevent="login"
+                    @click.prevent="signUp"
                     prepend-icon="mdi-login-variant"
                     color="blue-accent-3"
                     rounded="xl"
                     class="mb-6"
                     style="height: 45px"
                   >
-                    Login
+                    Sign up
                   </v-btn>
                   <v-btn
-                    @click.prevent="loginWithGoogle"
+                    @click.prevent="signUpWithGoogle"
                     rounded="xl"
                     class="mb-6"
-                    style="
-                      height: 45px;
-                      color: linear-gradient(
-                        to right,
-                        #4285f4 0%,
-                        #ea4335 31%,
-                        #fbbc05 62%,
-                        #fdcc4a 82%
-                      );
-                    "
+                    style="height: 45px"
+                    :loading = loading
                   >
-                    Login With Google
+                    Sign up With Google
                     <template v-slot:prepend>
                       <v-icon
                         color="primary"
@@ -88,11 +138,11 @@
                   </v-btn>
                   <div>
                     <h4 class="mt-3 text-center">
-                      Don't Have Account
+                      Already Have Account
                       <router-link
-                        :to="{ name: 'Sign Up' }"
+                        :to="{ name: 'Login' }"
                         class="text-blue-accent-3"
-                        ><strong>Sign up</strong></router-link
+                        ><strong>Login</strong></router-link
                       >
                     </h4>
                   </div>
@@ -109,21 +159,49 @@
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
 import { ref } from "vue";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+} from "firebase/auth";
 /*
     Variables
 */
 const themeStore = useThemeStore();
+//
+let dialog = ref(false); // to show Dialog when the user add Todo
+let loading = ref(false); // to show Loading in the button when the user add Todo
+const firstName = ref("");
+const lastName = ref("");
 const email = ref("");
 const password = ref("");
+const auth = getAuth();
 
 /*
     methods
 */
-const login = () => {
-  // handle login
+const signUp = async () => {
+  try {
+    loading.value = true;
+    const user = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+    auth.currentUser.displayName =
+      firstName.value.trim() + " " + lastName.value.trim();
+    //
+    await sendEmailVerification(auth.currentUser);
+    console.log(user);
+    loading.value = false;
+    dialog.value = true;
+
+  } catch (err) {
+    console.log(err);
+  }
 };
-const loginWithGoogle = () => {
-  // handle login
+const signUpWithGoogle = () => {
+  console.log("test");
 };
 </script>
 

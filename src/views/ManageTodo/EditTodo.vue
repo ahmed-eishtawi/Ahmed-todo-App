@@ -10,6 +10,7 @@
             <v-dialog
               v-model="dialog"
               width="auto"
+              persistent
             >
               <v-card
                 max-width="450"
@@ -21,7 +22,7 @@
                 <div class="py-3 text-center px-15">
                   <v-icon
                     class="mb-3"
-                    color="success"
+                    color="amber-darken-1"
                     icon="mdi-check-circle-outline"
                     size="100"
                   ></v-icon>
@@ -120,7 +121,7 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, ref } from "vue";
+import { defineProps, onMounted, ref, watch } from "vue";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useRouter } from "vue-router";
@@ -151,6 +152,11 @@ const titleRules = ref([
 ]);
 
 const router = useRouter();
+
+// watch
+watch(dialog, () => {
+  dialog.value ? "" : router.push({ name: "Todo List" });
+});
 /*
   lifeCycleHooks
 */
@@ -178,9 +184,6 @@ const editTodo = async (todo) => {
       dialog.value = true;
       title.value = "";
       details.value = "";
-      setTimeout(() => {
-        router.push({ name: "Todo List" });
-      }, 1500);
     }
   }
 };

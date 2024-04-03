@@ -88,7 +88,14 @@
     <v-main class="d-flex flex-column">
       <v-row class="rowMargin">
         <v-col>
-          <router-view />
+          <router-view v-slot="{ Component }">
+            <transition
+              name="fade"
+              mode="out-in"
+            >
+              <component :is="Component" />
+            </transition>
+          </router-view>
         </v-col>
       </v-row>
       <Footer />
@@ -100,7 +107,7 @@
 <script setup>
 import { ref } from "vue";
 import Footer from "../components/Footer.vue";
-import { useThemeStore } from "../stores/themeStore";
+import { useThemeStore } from "../stores/useThemeStore";
 
 const drawer = ref(null);
 const themeStore = useThemeStore();
@@ -119,5 +126,15 @@ const items = [
   display: flex;
   justify-content: start;
   align-items: center;
+}
+/* Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-50px);
 }
 </style>

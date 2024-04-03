@@ -93,10 +93,7 @@
                 v-if="todos.length"
                 cols="12"
               >
-                <transition-group
-                  name="fade"
-                  mode="out-in"
-                >
+                <transition-group name="fade">
                   <Todo
                     v-for="todo in todos"
                     :key="todo.id"
@@ -115,7 +112,7 @@
 <script setup>
 import { onBeforeMount, onMounted, ref } from "vue";
 import Todo from "../components/Todo.vue";
-import { useThemeStore } from "../stores/themeStore.js";
+import { useThemeStore } from "../stores/useThemeStore.js";
 import {
   collection,
   onSnapshot,

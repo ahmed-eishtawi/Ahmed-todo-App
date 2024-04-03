@@ -10,6 +10,7 @@
             <v-dialog
               v-model="dialog"
               width="auto"
+              persistent
             >
               <v-card
                 max-width="450"
@@ -118,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useRouter } from "vue-router";
@@ -126,7 +127,7 @@ import { useRouter } from "vue-router";
 /*
   Variables
 */
-let dialog = ref(false); // to show Dialog when the user add Todo
+let dialog = ref(null); // to show Dialog when the user add Todo
 let loading = ref(false); // to show Loading in the button when the user add Todo
 const valid = ref(false);
 const title = ref("");
@@ -145,6 +146,10 @@ const titleRules = ref([
 ]);
 
 const router = useRouter();
+// watch
+watch(dialog, () => {
+  dialog.value ? "" : router.push({ name: "Todo List" });
+});
 /*
   Methods
 */
@@ -164,9 +169,6 @@ const addTodo = async () => {
     dialog.value = true;
     title.value = "";
     details.value = "";
-    setTimeout(() => {
-      router.push({ name: "Todo List" });
-    }, 1500);
   }
 };
 </script>

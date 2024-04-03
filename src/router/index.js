@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import MainApp from "../views/MainApp.vue";
+import Login from "../views/Login.vue";
+import SignUp from "../views/SignUp.vue";
 import TodoList from "../views/TodoList.vue";
 import About from "../views/About.vue";
 import AddTodo from "../views/ManageTodo/AddTodo.vue";
@@ -9,7 +11,7 @@ import PageNotFound404 from "../views/PageNotFound404.vue";
 const routes = [
   {
     path: "/",
-    name: "app",
+    name: "Todo App",
     component: MainApp,
     children: [
       {
@@ -40,11 +42,26 @@ const routes = [
       },
       /* Catch All 404 */
       {
-        path: "/:catchAll(.*)",
+        path: "/:pathMatch(.*)*",
         name: "Not Found",
         component: PageNotFound404,
       },
     ],
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: Login,
+  },
+  {
+    path: "/sign-up",
+    name: "Sign Up",
+    component: SignUp,
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "Not Found",
+    component: PageNotFound404,
   },
 ];
 
