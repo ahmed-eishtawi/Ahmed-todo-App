@@ -10,14 +10,58 @@
       :width="320"
     >
       <v-list>
-        <v-list-item prepend-avatar="Pic.jpg">
-          <v-list-item-title class="mb-1"> Ahmed Eishtawi </v-list-item-title>
-          <v-list-item-subtitle>
-            ahmed02.eishtawi@gmail.com
-          </v-list-item-subtitle>
+        <v-list-item>
+          <div class="d-flex align-center">
+            <v-menu
+              min-width="200px"
+              rounded
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon
+                  v-bind="props"
+                >
+                  <v-avatar
+                    image="Pic.jpg"
+                    size="large"
+                  >
+                  </v-avatar>
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-text>
+                  <div class="">
+                    <v-btn
+                      variant="text"
+                      rounded
+                      prepend-icon="mdi-account-edit"
+                      color="yellow-accent-4"
+                      @click="editDialog = true"
+                    >
+                      Edit Account
+                    </v-btn>
+                    <v-divider class="my-3"></v-divider>
+                    <v-btn
+                      variant="text"
+                      rounded
+                      color="red accent-4"
+                      prepend-icon="mdi-logout"
+                      @click="signOut(auth)"
+                    >
+                      Logout
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-menu>
+            <!--  -->
+            <v-list-item-title class="ml-4"
+              ><strong>Ahmed Eishtawi</strong></v-list-item-title
+            >
+          </div>
         </v-list-item>
       </v-list>
-      <v-divider class="mt-n1"></v-divider>
+      <v-divider class="mt-n2"></v-divider>
       <!--  -->
       <v-list
         dense
@@ -96,6 +140,11 @@
               <component :is="Component" />
             </transition>
           </router-view>
+          <EditAccount
+            v-if="editDialog"
+            @cancel="editDialog = false"
+            @save="saveChanges(valid)"
+          />
         </v-col>
       </v-row>
       <Footer />
@@ -105,17 +154,27 @@
 
 /* */
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import EditAccount from "../components/EditAccount.vue";
 import Footer from "../components/Footer.vue";
 import { useThemeStore } from "../stores/useThemeStore";
-
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+//
 const drawer = ref(null);
 const themeStore = useThemeStore();
+//
+const editDialog = ref(false); // to show edit account dialog
 
 const items = [
   { title: "Todo", icon: "mdi-format-list-checks", to: "/todo-list" },
   { title: "About", icon: "mdi-help-circle", to: "/about" },
 ];
+
+// lifeCycleHooks
+onMounted(() => {
+  //
+});
 </script>
 
 <style>

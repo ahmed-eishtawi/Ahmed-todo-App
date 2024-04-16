@@ -52,10 +52,12 @@
               >
                 <v-text-field
                   v-model="title"
+                  persistent-hint="true"
+                  hint="Title required & must be at least 3 characters"
                   color="blue-accent-3"
                   clearable
                   clear-icon="$clear"
-                  :rules="titleRules"
+                  validate-on="input lazy"
                   label="Title"
                   required
                 ></v-text-field>
@@ -85,7 +87,6 @@
                   >
                     <v-btn
                       @click="addTodo"
-                      :disabled="!valid"
                       prepend-icon="mdi-plus-thick"
                       color="green-darken-1"
                       block
@@ -119,10 +120,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { collection, addDoc } from "firebase/firestore";
+import { ref } from "vue";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase";
-import { useRouter } from "vue-router";
 
 /*
   Variables
@@ -132,24 +132,12 @@ let loading = ref(false); // to show Loading in the button when the user add Tod
 const valid = ref(false);
 const title = ref("");
 const details = ref("");
-const titleRules = ref([
-  (value) => {
-    if (value) return true;
 
-    return "Title is required";
-  },
-  (value) => {
-    if (value.length > 2) return true;
-
-    return "Title must be at least 3 characters.";
-  },
-]);
-
-const router = useRouter();
-// watch
-watch(dialog, () => {
-  dialog.value ? "" : router.push({ name: "Todo List" });
-});
+// const router = useRouter();
+// watch;
+// watch(dialog, () => {
+//   dialog.value ? "" : router.push({ name: "Todo List" });
+// });
 /*
   Methods
 */
@@ -161,12 +149,14 @@ const addTodo = async () => {
       title: title.value,
       details: details.value,
       isCompleted: false,
-      date: Date.now(),
+      date: serverTimestamp(),
     };
-    const docRef = await addDoc(collection(db, "todos"), todo);
+    await addDoc(collection(db, "todos"), todo);
     // show dialog
     loading.value = false;
     dialog.value = true;
+    title.value = "";
+    details.value = "";
   }
 };
 </script>

@@ -13,6 +13,7 @@ const routes = [
     path: "/",
     name: "Todo App",
     component: MainApp,
+    // meta: { isProtected: true },
     children: [
       {
         path: "/todo-list",
@@ -69,5 +70,9 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
 });
+
+// router.beforeEach((to, from, next) => {
+  
+// })
 
 export default router;

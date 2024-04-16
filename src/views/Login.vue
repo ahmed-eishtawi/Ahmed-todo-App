@@ -165,7 +165,7 @@ const passwordRules = ref([
   },
   (value) => {
     if (value.length > 7) return true;
-    return "Password must be at least 6 characters";
+    return "Password must be at least 8 characters";
   },
 ]);
 /*

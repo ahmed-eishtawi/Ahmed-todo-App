@@ -100,6 +100,7 @@
                   variant="solo"
                   :rules="passwordRules"
                   v-model="password"
+                  @keydown.enter.prevent="signUp"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-lock-outline </v-icon>
@@ -182,19 +183,25 @@
 
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
-import { ref, watch, watchEffect } from "vue";
+import { ref, watch } from "vue";
 import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   sendEmailVerification,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { db, auth } from "../firebase";
 import { useRouter } from "vue-router";
+import { doc, setDoc } from "firebase/firestore";
+import { useCurrentUser, useFirebaseAuth } from "vuefire";
 /*
     Variables
 */
 const themeStore = useThemeStore();
+//
+//vueFire
+const user = useCurrentUser();
+console.log(user);
 //
 let dialog = ref(false); // to show Dialog when the user add Todo
 let loading = ref(false); // to show Loading in the button when the user add Todo
@@ -239,7 +246,7 @@ const passwordRules = ref([
   },
   (value) => {
     if (value.length > 7) return true;
-    return "Password must be at least 6 characters";
+    return "Password must be at least 8 characters";
   },
 ]);
 // router
@@ -262,11 +269,19 @@ const signUp = async () => {
         password.value
       );
       res.user.displayName = `${firstName.value} ${lastName.value}`;
-      //
+      // save in firestore
+      const docRef = doc(db, "users", res.user.uid);
+      await setDoc(docRef, {
+        email: email.value,
+        firstName: firstName.value,
+        lastName: lastName.value,
+        photoUrl: res.user.photoURL,
+      });
+      //send email verification
       await sendEmailVerification(auth.currentUser);
-      console.log(res.user);
       loading.value = false;
       dialog.value = true;
+      console.log(user);
     } catch (err) {
       error.value = err.message;
     }
@@ -276,12 +291,18 @@ const signUpWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const res = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(res);
-    const token = credential.accessToken;
-    const user = res.user;
-    user.displayName = user.displayName;
+    // const credential = GoogleAuthProvider.credentialFromResult(res);
+
+    // save in firestore
+    const docRef = doc(db, "users", res.user.uid);
+    await setDoc(docRef, {
+      email: res.user.email,
+      firstName: firstName.value,
+      lastName: lastName.value,
+      photoUrl: res.user.photoURL,
+    });
+    router.push({ name: "Todo List" });
     console.log(user);
-    dialog.value = true;
   } catch (err) {
     error.value = GoogleAuthProvider.credentialFromError(err);
     console.log(err);

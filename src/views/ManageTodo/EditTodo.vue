@@ -173,7 +173,6 @@ onMounted(async () => {
 */
 const editTodo = async (todo) => {
   if (!title.length) {
-    //فيه خطأ معنديش ليه وقت حاليا
     if (title.value.length > 2) {
       loading.value = true;
       await updateDoc(doc(db, "todos", props.id), {

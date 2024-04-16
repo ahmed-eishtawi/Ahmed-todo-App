@@ -82,6 +82,22 @@
                   class="rounded-0 ma-0 pa-0"
                   type="list-item, subtitle"
                 ></v-skeleton-loader>
+                <v-skeleton-loader
+                  class="rounded-0 ma-0 pa-0"
+                  type="list-item, subtitle"
+                ></v-skeleton-loader>
+                <v-skeleton-loader
+                  class="rounded-0 ma-0 pa-0"
+                  type="list-item, subtitle"
+                ></v-skeleton-loader>
+                <v-skeleton-loader
+                  class="rounded-0 ma-0 pa-0"
+                  type="list-item, subtitle"
+                ></v-skeleton-loader>
+                <v-skeleton-loader
+                  class="rounded-0 ma-0 pa-0"
+                  type="list-item, subtitle"
+                ></v-skeleton-loader>
               </v-col>
             </v-row>
             <v-row
@@ -93,13 +109,13 @@
                 v-if="todos.length"
                 cols="12"
               >
-                <transition-group name="fade">
+                <div v-auto-animate>
                   <Todo
                     v-for="todo in todos"
                     :key="todo.id"
                     :todo="todo"
                   />
-                </transition-group>
+                </div>
               </v-col>
             </v-row>
           </v-main>
@@ -110,9 +126,8 @@
 </template>
 
 <script setup>
-import { onBeforeMount, onMounted, ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import Todo from "../components/Todo.vue";
-import { useThemeStore } from "../stores/useThemeStore.js";
 import {
   collection,
   onSnapshot,
@@ -121,19 +136,17 @@ import {
   doc,
   deleteDoc,
 } from "firebase/firestore";
+import { useCollection } from "vuefire";
 import { db } from "@/firebase";
 /*
   Variables
 */
 const loading = ref(true);
 let dialog = ref(false); // to show Dialog when the user add Todo
-const showDetails = ref(false);
-const theme = useThemeStore();
 const todos = ref([]);
 /* */
 const todoCollectionRef = collection(db, "todos");
 const todoCollectionQuery = query(todoCollectionRef, orderBy("date", "desc"));
-
 /*
   lifeCycleHooks
 */
@@ -142,13 +155,7 @@ onBeforeMount(() => {
   onSnapshot(todoCollectionQuery, (querySnapshot) => {
     let temp = [];
     querySnapshot.forEach((doc) => {
-      const todo = {
-        id: doc.id,
-        title: doc.data().title,
-        details: doc.data().details,
-        isCompleted: doc.data().isCompleted,
-      };
-      temp.push(todo);
+      temp.push({ ...doc.data(), id: doc.id });
     });
     todos.value = temp;
     loading.value = false;
@@ -176,16 +183,13 @@ const clearTodo = async () => {
   color: inherit;
 }
 /* transition */
+
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.5s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
-}
-.fade-enter-to,
-.fade-leave-from {
-  opacity: 1;
+  transform: translateY(-50px);
 }
 </style>
