@@ -38,6 +38,7 @@
                   variant="solo"
                   :rules="passwordRules"
                   v-model="password"
+                  @keydown.enter.prevent="login"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-lock-outline </v-icon>
@@ -78,6 +79,7 @@
                     rounded="xl"
                     class="mb-6"
                     style="height: 45px"
+                    :loading="loading"
                   >
                     <strong> Login </strong>
                   </v-btn>
@@ -85,16 +87,8 @@
                     @click.prevent="loginWithGoogle"
                     rounded="xl"
                     class="mb-6"
-                    style="
-                      height: 45px;
-                      color: linear-gradient(
-                        to right,
-                        #4285f4 0%,
-                        #ea4335 31%,
-                        #fbbc05 62%,
-                        #fdcc4a 82%
-                      );
-                    "
+                    style="height: 45px"
+                    :loading="loadingGoogle"
                   >
                     Login With Google
                     <template v-slot:prepend>
@@ -135,17 +129,29 @@
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import { auth, db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 /*
     Variables
 */
 const themeStore = useThemeStore();
+const router = useRouter();
 //
 const showPassword = ref(false);
+let loading = ref(false); // to show Loading in the button
+let loadingGoogle = ref(false); // to show Loading in the button
 // user
 const email = ref("");
 const password = ref("");
 const error = ref(null);
 const valid = ref(false);
+//
 const emailRules = ref([
   (value) => {
     if (value) return true;
@@ -168,14 +174,50 @@ const passwordRules = ref([
     return "Password must be at least 8 characters";
   },
 ]);
+
 /*
     methods
 */
-const login = () => {
-  // handle login
+const login = async () => {
+  try {
+    loading.value = true;
+    const res = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+    loading.value = false;
+    router.push({ name: "Todo List" });
+  } catch (err) {
+    error.value = err.message;
+    console.log(err);
+  } finally {
+    loading.value = false;
+  }
 };
-const loginWithGoogle = () => {
-  // handle login
+const loginWithGoogle = async () => {
+  try {
+    loadingGoogle.value = true;
+    const provider = new GoogleAuthProvider();
+    const res = await signInWithPopup(auth, provider);
+    // const credential = GoogleAuthProvider.credentialFromResult(res);
+    const fullName = res.user.displayName.split(" ");
+    // save in firestore
+    const docRef = doc(db, "users", res.user.uid);
+    await setDoc(docRef, {
+      email: res.user.email,
+      firstName: fullName[0],
+      lastName: fullName[1],
+      photoUrl: res.user.photoURL,
+    });
+    loadingGoogle.value = false;
+    router.push({ name: "Todo List" });
+  } catch (err) {
+    error.value = GoogleAuthProvider.credentialFromError(err);
+    console.log(err);
+  } finally {
+    loadingGoogle.value = false;
+  }
 };
 </script>
 

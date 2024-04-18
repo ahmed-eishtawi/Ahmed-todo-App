@@ -7,35 +7,55 @@ import About from "../views/About.vue";
 import AddTodo from "../views/ManageTodo/AddTodo.vue";
 import EditTodo from "../views/ManageTodo/EditTodo.vue";
 import PageNotFound404 from "../views/PageNotFound404.vue";
+//
+// import auth
+import { auth } from "../firebase";
+//
 
+// function to protect routes
+
+//
 const routes = [
   {
     path: "/",
     name: "Todo App",
     component: MainApp,
-    // meta: { isProtected: true },
+    meta: {
+      requiresAuth: true,
+    },
     children: [
       {
         path: "/todo-list",
         name: "Todo List",
         component: TodoList,
-        children: [],
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: "/about",
         name: "About",
         component: About,
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: "/add-todo",
         name: "Add Todo",
         component: AddTodo,
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: "/todo/:id",
         name: "EditTodo",
         component: EditTodo,
         props: true,
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: "/all-todos",
@@ -71,8 +91,16 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-  
-// })
+router.beforeEach((to, from, next) => {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (auth.currentUser) {
+      next();
+    } else {
+      next("/login");
+    }
+  } else {
+    next();
+  }
+});
 
 export default router;

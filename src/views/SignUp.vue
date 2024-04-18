@@ -144,6 +144,7 @@
                     rounded="xl"
                     class="mb-6"
                     style="height: 45px"
+                    :loading="loadingGoogle"
                   >
                     Sign up With Google
                     <template v-slot:prepend>
@@ -193,18 +194,16 @@ import {
 import { db, auth } from "../firebase";
 import { useRouter } from "vue-router";
 import { doc, setDoc } from "firebase/firestore";
-import { useCurrentUser, useFirebaseAuth } from "vuefire";
+import { useCurrentUser } from "vuefire";
 /*
     Variables
 */
 const themeStore = useThemeStore();
 //
-//vueFire
-const user = useCurrentUser();
-console.log(user);
 //
-let dialog = ref(false); // to show Dialog when the user add Todo
-let loading = ref(false); // to show Loading in the button when the user add Todo
+let dialog = ref(false); // to show Dialog
+let loading = ref(false); // to show Loading in the button
+let loadingGoogle = ref(false); // to show Loading in the button
 const showPassword = ref(false);
 // user
 const firstName = ref("");
@@ -281,31 +280,35 @@ const signUp = async () => {
       await sendEmailVerification(auth.currentUser);
       loading.value = false;
       dialog.value = true;
-      console.log(user);
     } catch (err) {
       error.value = err.message;
+    } finally {
+      loading.value = false;
     }
   }
 };
 const signUpWithGoogle = async () => {
   try {
+    loadingGoogle.value = true;
     const provider = new GoogleAuthProvider();
     const res = await signInWithPopup(auth, provider);
     // const credential = GoogleAuthProvider.credentialFromResult(res);
-
+    const fullName = res.user.displayName.split(" ");
     // save in firestore
     const docRef = doc(db, "users", res.user.uid);
     await setDoc(docRef, {
       email: res.user.email,
-      firstName: firstName.value,
-      lastName: lastName.value,
+      firstName: fullName[0],
+      lastName: fullName[1],
       photoUrl: res.user.photoURL,
     });
+    loadingGoogle.value = true;
     router.push({ name: "Todo List" });
-    console.log(user);
   } catch (err) {
     error.value = GoogleAuthProvider.credentialFromError(err);
     console.log(err);
+  } finally {
+    loadingGoogle.value = false;
   }
 };
 </script>

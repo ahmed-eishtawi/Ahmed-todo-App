@@ -136,7 +136,6 @@ import {
   doc,
   deleteDoc,
 } from "firebase/firestore";
-import { useCollection } from "vuefire";
 import { db } from "@/firebase";
 /*
   Variables

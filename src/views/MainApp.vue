@@ -9,7 +9,7 @@
       app
       :width="320"
     >
-      <v-list>
+      <v-list v-if="user">
         <v-list-item>
           <div class="d-flex align-center">
             <v-menu
@@ -22,7 +22,15 @@
                   v-bind="props"
                 >
                   <v-avatar
+                    v-if="user.photoURL"
                     image="Pic.jpg"
+                    size="large"
+                  >
+                  </v-avatar>
+                  <!--  -->
+                  <v-avatar
+                    v-else
+                    :image="`https://placehold.jp/100/2e2e2e/2979ff/200x200.png?text=AE&css=%7B%22border-radius%22%3A%2250%25%22%7D`"
                     size="large"
                   >
                   </v-avatar>
@@ -30,7 +38,7 @@
               </template>
               <v-card>
                 <v-card-text>
-                  <div class="">
+                  <div>
                     <v-btn
                       variant="text"
                       rounded
@@ -46,7 +54,10 @@
                       rounded
                       color="red accent-4"
                       prepend-icon="mdi-logout"
-                      @click="signOut(auth)"
+                      @click="
+                        signOut(auth);
+                        $router.push({ name: 'Login' });
+                      "
                     >
                       Logout
                     </v-btn>
@@ -61,6 +72,13 @@
           </div>
         </v-list-item>
       </v-list>
+      <!--  -->
+      <v-skeleton-loader
+        v-else
+        type="list-item-avatar"
+        class="mb-2"
+      ></v-skeleton-loader>
+
       <v-divider class="mt-n2"></v-divider>
       <!--  -->
       <v-list
@@ -155,26 +173,51 @@
 /* */
 <script setup>
 import { onMounted, ref } from "vue";
-import EditAccount from "../components/EditAccount.vue";
+import EditAccount from "../components/EditAccount";
 import Footer from "../components/Footer.vue";
 import { useThemeStore } from "../stores/useThemeStore";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { getUser } from "@/composables/getUser";
 //
 const drawer = ref(null);
 const themeStore = useThemeStore();
-//
 const editDialog = ref(false); // to show edit account dialog
 
+//
 const items = [
   { title: "Todo", icon: "mdi-format-list-checks", to: "/todo-list" },
   { title: "About", icon: "mdi-help-circle", to: "/about" },
 ];
+//
 
+const { user } = { ...getUser() };
+const userData = ref(null);
 // lifeCycleHooks
-onMounted(() => {
-  //
+onMounted(async () => {
+  if (user.value) {
+    console.log(user);
+    try {
+      const docRef = doc(db, "users", user.value.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        userData.value = { ...docSnap.data() };
+        console.log("done");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 });
+
+// methods
+
+const saveChanges = (valid) => {
+  if (valid) {
+    // logic here
+  }
+};
 </script>
 
 <style>

@@ -6,15 +6,14 @@ import { onAuthStateChanged } from "firebase/auth";
 
 const user = ref(auth.currentUser);
 
-onAuthStateChanged(auth, (_user) => {
-  console.log("user", user.displayName);
-  user.value = _user;
+// auth changes
+onAuthStateChanged(auth, (myUser) => {
+  console.log("userFromGetUser: ", myUser);
+  user.value = myUser;
 });
 //
 
-const getUser = () => {
+export const getUser = () => {
   return { user };
 };
 //
-
-export default getUser;
