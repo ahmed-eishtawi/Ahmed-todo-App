@@ -8,7 +8,7 @@ const user = ref(auth.currentUser);
 
 // auth changes
 onAuthStateChanged(auth, (myUser) => {
-  console.log("userFromGetUser: ", myUser);
+  // console.log("userFromGetUser: ", myUser);
   user.value = myUser;
 });
 //

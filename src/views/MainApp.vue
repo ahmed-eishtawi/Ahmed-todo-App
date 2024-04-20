@@ -9,10 +9,11 @@
       app
       :width="320"
     >
-      <v-list v-if="user">
+      <v-list v-if="userData">
         <v-list-item>
           <div class="d-flex align-center">
             <v-menu
+              transition="slide-x-transition"
               min-width="200px"
               rounded
             >
@@ -20,17 +21,23 @@
                 <v-btn
                   icon
                   v-bind="props"
+                  class="mb-1"
+                  variant="text"
                 >
                   <v-avatar
-                    v-if="user.photoURL"
-                    image="Pic.jpg"
+                    v-if="userData.photoUrl"
+                    :image="userData.photoUrl.toString()"
                     size="large"
                   >
                   </v-avatar>
                   <!--  -->
                   <v-avatar
                     v-else
-                    :image="`https://placehold.jp/100/2e2e2e/2979ff/200x200.png?text=AE&css=%7B%22border-radius%22%3A%2250%25%22%7D`"
+                    :image="`https://placehold.jp/100/${getBackgroundColor}/${getTextColor}/200x200.png?text=${userData.firstName
+                      .toUpperCase()
+                      .charAt(0)}${userData.lastName
+                      .toUpperCase()
+                      .charAt(0)}&css=%7B%22border-radius%22%3A%2250%25%22%7D`"
                     size="large"
                   >
                   </v-avatar>
@@ -67,7 +74,9 @@
             </v-menu>
             <!--  -->
             <v-list-item-title class="ml-4"
-              ><strong>Ahmed Eishtawi</strong></v-list-item-title
+              ><strong>{{
+                `${userData.firstName} ${userData.lastName}`
+              }}</strong></v-list-item-title
             >
           </div>
         </v-list-item>
@@ -79,7 +88,7 @@
         class="mb-2"
       ></v-skeleton-loader>
 
-      <v-divider class="mt-n2"></v-divider>
+      <v-divider></v-divider>
       <!--  -->
       <v-list
         dense
@@ -172,52 +181,89 @@
 
 /* */
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import EditAccount from "../components/EditAccount";
 import Footer from "../components/Footer.vue";
 import { useThemeStore } from "../stores/useThemeStore";
 import { signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { getUser } from "@/composables/getUser";
+import { onBeforeMount } from "vue";
 //
 const drawer = ref(null);
 const themeStore = useThemeStore();
 const editDialog = ref(false); // to show edit account dialog
-
-//
-const items = [
-  { title: "Todo", icon: "mdi-format-list-checks", to: "/todo-list" },
-  { title: "About", icon: "mdi-help-circle", to: "/about" },
-];
-//
-
-const { user } = { ...getUser() };
-const userData = ref(null);
-// lifeCycleHooks
-onMounted(async () => {
-  if (user.value) {
-    console.log(user);
-    try {
-      const docRef = doc(db, "users", user.value.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        userData.value = { ...docSnap.data() };
-        console.log("done");
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
+/*
+  placeholder colors
+*/
+const darkMode = ref({
+  backgroundColor: "2e2e2e",
+  textColor: "2979ff",
+});
+const lightMode = ref({
+  backgroundColor: "2979FF",
+  textColor: "ffffff",
 });
 
-// methods
-
+const getBackgroundColor = computed(() => {
+  return themeStore.getTheme === "dark"
+    ? darkMode.value.backgroundColor
+    : lightMode.value.backgroundColor;
+});
+const getTextColor = computed(() => {
+  return themeStore.getTheme === "dark"
+    ? darkMode.value.textColor
+    : lightMode.value.textColor;
+});
+//
+/*
+  dashboard
+*/
+const items = [
+  { title: "Todo", icon: "mdi-format-list-checks", to: { name: "Todo List" } },
+  { title: "About", icon: "mdi-help-circle", to: { name: "About" } },
+];
+//
+/*
+  user
+*/
+const { user } = { ...getUser() };
+const userData = ref(null);
+//
+/*
+  methods
+*/
 const saveChanges = (valid) => {
   if (valid) {
     // logic here
   }
 };
+//
+/*
+ lifeCycleHooks
+*/
+onBeforeMount(() => {});
+onMounted(async () => {
+  if (user.value) {
+    try {
+      const docRef = doc(db, "users", user.value.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        userData.value = docSnap.data();
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    // snapShot
+    console.log(userData.value);
+    if (userData) {
+      onSnapshot(doc(db, "users", user.value.uid), (querySnapshot) => {
+        userData.value = { ...querySnapshot.data() };
+      });
+    }
+  }
+});
 </script>
 
 <style>

@@ -135,21 +135,32 @@ import {
   orderBy,
   doc,
   deleteDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "@/firebase";
+import { getUser } from "@/composables/getUser";
 /*
   Variables
 */
 const loading = ref(true);
 let dialog = ref(false); // to show Dialog when the user add Todo
 const todos = ref([]);
-/* */
+/*
+  user
+*/
+const { user } = { ...getUser() };
+//
 const todoCollectionRef = collection(db, "todos");
-const todoCollectionQuery = query(todoCollectionRef, orderBy("date", "desc"));
+
+const todoCollectionQuery = query(
+  todoCollectionRef,
+  where("userEmail", "==", user.value.email.toString()),
+  orderBy("date", "desc")
+);
+//
 /*
   lifeCycleHooks
 */
-
 onBeforeMount(() => {
   onSnapshot(todoCollectionQuery, (querySnapshot) => {
     let temp = [];

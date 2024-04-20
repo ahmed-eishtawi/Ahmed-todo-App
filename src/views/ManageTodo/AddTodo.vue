@@ -35,7 +35,8 @@
                     text="Ok"
                     color="success"
                     @click="dialog = false"
-                  ></v-btn>
+                  >
+                  </v-btn>
                 </template>
               </v-card>
             </v-dialog>
@@ -52,14 +53,14 @@
               >
                 <v-text-field
                   v-model="title"
-                  persistent-hint="true"
-                  hint="Title required & must be at least 3 characters"
+                  @keydown.enter.prevent="addTodo"
                   color="blue-accent-3"
                   clearable
                   clear-icon="$clear"
                   validate-on="input lazy"
                   label="Title"
                   required
+                  autofocus
                 ></v-text-field>
               </v-col>
 
@@ -123,6 +124,7 @@
 import { ref } from "vue";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase";
+import { getUser } from "@/composables/getUser";
 
 /*
   Variables
@@ -132,12 +134,22 @@ let loading = ref(false); // to show Loading in the button when the user add Tod
 const valid = ref(false);
 const title = ref("");
 const details = ref("");
-
+//
+/*
+  user
+*/
+const { user } = { ...getUser() }; // get current user
+//
+/*
+  redirect user after adding todo
+*/
+// for ux i comment the below code
 // const router = useRouter();
 // watch;
 // watch(dialog, () => {
 //   dialog.value ? "" : router.push({ name: "Todo List" });
 // });
+
 /*
   Methods
 */
@@ -150,6 +162,7 @@ const addTodo = async () => {
       details: details.value,
       isCompleted: false,
       date: serverTimestamp(),
+      userEmail: user.value.email.toString(),
     };
     await addDoc(collection(db, "todos"), todo);
     // show dialog

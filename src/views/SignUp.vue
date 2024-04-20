@@ -60,6 +60,8 @@
                       variant="solo"
                       :rules="firstNameRules"
                       v-model="firstName"
+                      autofocus
+                      tabindex="1"
                     >
                     </v-text-field>
                   </v-col>
@@ -73,6 +75,7 @@
                       variant="solo"
                       :rules="lastNameRules"
                       v-model="lastName"
+                      tabindex="2"
                     >
                     </v-text-field>
                   </v-col>
@@ -86,6 +89,7 @@
                   variant="solo"
                   :rules="emailRules"
                   v-model="email"
+                  tabindex="3"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-email-outline </v-icon>
@@ -101,6 +105,7 @@
                   :rules="passwordRules"
                   v-model="password"
                   @keydown.enter.prevent="signUp"
+                  tabindex="4"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-lock-outline </v-icon>
@@ -109,6 +114,7 @@
                     <div
                       @click="showPassword = !showPassword"
                       class="cursor-pointer"
+                      tabindex="5"
                     >
                       <v-icon
                         v-if="!showPassword"
@@ -125,10 +131,7 @@
                     </div>
                   </template>
                 </v-text-field>
-                <div
-                  id="buttons"
-                  class="d-flex flex-column my-5"
-                >
+                <div class="d-flex flex-column my-5">
                   <v-btn
                     @click.prevent="signUp"
                     color="blue-accent-3"
@@ -139,23 +142,7 @@
                   >
                     <strong> Sign up </strong>
                   </v-btn>
-                  <v-btn
-                    @click.prevent="signUpWithGoogle"
-                    rounded="xl"
-                    class="mb-6"
-                    style="height: 45px"
-                    :loading="loadingGoogle"
-                  >
-                    Sign up With Google
-                    <template v-slot:prepend>
-                      <v-icon
-                        color="blue-accent-3"
-                        size="25"
-                      >
-                        mdi-google
-                      </v-icon>
-                    </template>
-                  </v-btn>
+
                   <div>
                     <h4 class="mt-3 text-center">
                       Already Have Account
@@ -194,7 +181,6 @@ import {
 import { db, auth } from "../firebase";
 import { useRouter } from "vue-router";
 import { doc, setDoc } from "firebase/firestore";
-import { useCurrentUser } from "vuefire";
 /*
     Variables
 */
@@ -203,7 +189,6 @@ const themeStore = useThemeStore();
 //
 let dialog = ref(false); // to show Dialog
 let loading = ref(false); // to show Loading in the button
-let loadingGoogle = ref(false); // to show Loading in the button
 const showPassword = ref(false);
 // user
 const firstName = ref("");
@@ -285,30 +270,6 @@ const signUp = async () => {
     } finally {
       loading.value = false;
     }
-  }
-};
-const signUpWithGoogle = async () => {
-  try {
-    loadingGoogle.value = true;
-    const provider = new GoogleAuthProvider();
-    const res = await signInWithPopup(auth, provider);
-    // const credential = GoogleAuthProvider.credentialFromResult(res);
-    const fullName = res.user.displayName.split(" ");
-    // save in firestore
-    const docRef = doc(db, "users", res.user.uid);
-    await setDoc(docRef, {
-      email: res.user.email,
-      firstName: fullName[0],
-      lastName: fullName[1],
-      photoUrl: res.user.photoURL,
-    });
-    loadingGoogle.value = true;
-    router.push({ name: "Todo List" });
-  } catch (err) {
-    error.value = GoogleAuthProvider.credentialFromError(err);
-    console.log(err);
-  } finally {
-    loadingGoogle.value = false;
   }
 };
 </script>

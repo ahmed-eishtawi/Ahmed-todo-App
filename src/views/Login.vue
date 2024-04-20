@@ -24,6 +24,7 @@
                   variant="solo"
                   :rules="emailRules"
                   v-model="email"
+                  tabindex="1"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-email-outline </v-icon>
@@ -39,6 +40,7 @@
                   :rules="passwordRules"
                   v-model="password"
                   @keydown.enter.prevent="login"
+                  tabindex="2"
                 >
                   <template v-slot:prepend-inner>
                     <v-icon color="blue-accent-3"> mdi-lock-outline </v-icon>
@@ -47,6 +49,7 @@
                     <div
                       @click="showPassword = !showPassword"
                       class="cursor-pointer"
+                      tabindex="3"
                     >
                       <v-icon
                         v-if="!showPassword"
@@ -65,14 +68,15 @@
                 </v-text-field>
                 <!-- maybe i will remove it -->
                 <div class="mt-n2 d-flex justify-end pr-2">
-                  <h5 class="text-blue-accent-3 cursor-pointer">
+                  <h5
+                    class="text-blue-accent-3 cursor-pointer"
+                    @click.prevent="forgotPassword"
+                    tabindex="4"
+                  >
                     Forgot Password ?
                   </h5>
                 </div>
-                <div
-                  id="buttons"
-                  class="d-flex flex-column my-5"
-                >
+                <div class="d-flex flex-column my-5">
                   <v-btn
                     @click.prevent="login"
                     color="blue-accent-3"
@@ -92,12 +96,11 @@
                   >
                     Login With Google
                     <template v-slot:prepend>
-                      <v-icon
-                        color="blue-accent-3"
-                        size="25"
-                      >
-                        mdi-google
-                      </v-icon>
+                      <img
+                        src="data:image/svg+xml,%3csvg%20width='28'%20height='28'%20viewBox='0%200%2028%2028'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M27.9851%2014.2618C27.9851%2013.1146%2027.8899%2012.2775%2027.6837%2011.4094H14.2788V16.5871H22.1472C21.9886%2017.8738%2021.132%2019.8116%2019.2283%2021.1137L19.2016%2021.287L23.44%2024.4956L23.7336%2024.5242C26.4304%2022.0904%2027.9851%2018.5093%2027.9851%2014.2618Z'%20fill='%234285F4'/%3e%3cpath%20d='M14.279%2027.904C18.1338%2027.904%2021.37%2026.6637%2023.7338%2024.5245L19.2285%2021.114C18.0228%2021.9356%2016.4047%2022.5092%2014.279%2022.5092C10.5034%2022.5092%207.29894%2020.0754%206.15663%2016.7114L5.9892%2016.7253L1.58205%2020.0583L1.52441%2020.2149C3.87224%2024.7725%208.69486%2027.904%2014.279%2027.904Z'%20fill='%2334A853'/%3e%3cpath%20d='M6.15656%2016.7113C5.85516%2015.8432%205.68072%2014.913%205.68072%2013.9519C5.68072%2012.9907%205.85516%2012.0606%206.14071%2011.1925L6.13272%2011.0076L1.67035%207.62109L1.52435%207.68896C0.556704%209.58024%200.00146484%2011.7041%200.00146484%2013.9519C0.00146484%2016.1997%200.556704%2018.3234%201.52435%2020.2147L6.15656%2016.7113Z'%20fill='%23FBBC05'/%3e%3cpath%20d='M14.279%205.3947C16.9599%205.3947%2018.7683%206.52635%2019.7995%207.47204L23.8289%203.6275C21.3542%201.37969%2018.1338%200%2014.279%200C8.69485%200%203.87223%203.1314%201.52441%207.68899L6.14077%2011.1925C7.29893%207.82856%2010.5034%205.3947%2014.279%205.3947Z'%20fill='%23EB4335'/%3e%3c/svg%3e"
+                        alt=""
+                        height="23"
+                      />
                     </template>
                   </v-btn>
                   <div>
@@ -128,15 +131,17 @@
 
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
-import { ref } from "vue";
+import { onBeforeMount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
 } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 /*
     Variables
 */
@@ -176,16 +181,36 @@ const passwordRules = ref([
 ]);
 
 /*
+  lifeCycleHooks
+*/
+onBeforeMount(async () => {
+  const res = await getRedirectResult(auth);
+  if (res) {
+    const userdoc = doc(db, "users", res.user.uid);
+    const docSnap = await getDoc(userdoc);
+    if (!docSnap.exists()) {
+      const fullName = res.user.displayName.split(" ");
+      // save in firestore
+      const docRef = doc(db, "users", res.user.uid);
+      await setDoc(docRef, {
+        email: res.user.email,
+        firstName: fullName[0],
+        lastName: fullName[1],
+        photoUrl: res.user.photoURL,
+      });
+      console.log("done");
+    }
+    loadingGoogle.value = false;
+    router.push({ name: "Todo List" });
+  }
+});
+/*
     methods
 */
 const login = async () => {
   try {
     loading.value = true;
-    const res = await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
+    await signInWithEmailAndPassword(auth, email.value, password.value);
     loading.value = false;
     router.push({ name: "Todo List" });
   } catch (err) {
@@ -199,19 +224,8 @@ const loginWithGoogle = async () => {
   try {
     loadingGoogle.value = true;
     const provider = new GoogleAuthProvider();
-    const res = await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
     // const credential = GoogleAuthProvider.credentialFromResult(res);
-    const fullName = res.user.displayName.split(" ");
-    // save in firestore
-    const docRef = doc(db, "users", res.user.uid);
-    await setDoc(docRef, {
-      email: res.user.email,
-      firstName: fullName[0],
-      lastName: fullName[1],
-      photoUrl: res.user.photoURL,
-    });
-    loadingGoogle.value = false;
-    router.push({ name: "Todo List" });
   } catch (err) {
     error.value = GoogleAuthProvider.credentialFromError(err);
     console.log(err);
@@ -220,5 +234,3 @@ const loginWithGoogle = async () => {
   }
 };
 </script>
-
-<style></style>

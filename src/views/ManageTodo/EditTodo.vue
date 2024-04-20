@@ -54,12 +54,14 @@
               >
                 <v-text-field
                   v-model="title"
+                  @keydown.enter.prevent="editTodo"
                   color="blue-accent-3"
                   clearable
                   clear-icon="$clear"
                   :rules="titleRules"
                   label="Title"
                   required
+                  autofocus
                 ></v-text-field>
               </v-col>
 
