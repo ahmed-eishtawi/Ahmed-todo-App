@@ -226,9 +226,7 @@
               :border-color="'white'"
               :text="message"
               :type="type"
-              :timeout="2000"
               closable
-              transition="scroll-x-transition"
               elevation="10"
               class="mt-16 mx-1"
             ></v-alert>

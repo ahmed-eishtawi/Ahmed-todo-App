@@ -66,15 +66,19 @@
                     </div>
                   </template>
                 </v-text-field>
-                <!-- maybe i will remove it -->
-                <div class="mt-n2 d-flex justify-end pr-2">
-                  <h5
-                    class="text-blue-accent-3 cursor-pointer"
-                    @click.prevent="forgotPassword"
+                <!-- forgot password -->
+                <div class="d-flex justify-end align-center pr-2">
+                  <v-btn
+                    variant="plain"
+                    size="x-small"
+                    color="blue-accent-3"
+                    class="py-0 px-0 mt-n2"
                     tabindex="4"
+                    :ripple="false"
+                    :to="{ name: 'ForgotPassword' }"
                   >
                     Forgot Password ?
-                  </h5>
+                  </v-btn>
                 </div>
                 <div class="d-flex flex-column my-5">
                   <v-btn
@@ -146,7 +150,7 @@
 
 <script setup>
 import { useThemeStore } from "@/stores/useThemeStore";
-import { onBeforeMount, onMounted, ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   signInWithEmailAndPassword,
@@ -245,7 +249,6 @@ const login = async () => {
       return;
     }
     const errorCode = err.code;
-    console.log(err.message);
     switch (errorCode) {
       case "auth/user-not-found":
         error.value = "User not found. Please check your email.";
