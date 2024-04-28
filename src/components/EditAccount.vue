@@ -17,42 +17,6 @@
         </template>
         <!--  -->
         <v-form v-model="valid">
-          <v-dialog
-            v-model="savedDialog"
-            width="auto"
-            persistent
-          >
-            <v-card
-              max-width="450"
-              append-icon="$info"
-              title="Done"
-              rounded="lg"
-            >
-              <v-divider></v-divider>
-              <div class="py-3 text-center px-15">
-                <v-icon
-                  class="mb-3"
-                  color="success"
-                  icon="mdi-check-circle-outline"
-                  size="100"
-                ></v-icon>
-                <div class="text-h5 font-weight-bold">Changes Saved</div>
-              </div>
-
-              <template v-slot:actions>
-                <v-btn
-                  class="ms-auto"
-                  text="Ok"
-                  color="success"
-                  @click="
-                    savedDialog = false;
-                    $emit('cancel');
-                  "
-                >
-                </v-btn>
-              </template>
-            </v-card>
-          </v-dialog>
           <!--  -->
           <v-card-text class="mt-5">
             <v-row dense>
@@ -148,6 +112,14 @@
                     ></v-text-field>
                   </v-col>
                   <v-btn
+                    @click="saveName"
+                    variant="text"
+                    class="ml-sm-1 text-green-lighten-1"
+                    :loading="loadingUpdateName"
+                  >
+                    Save
+                  </v-btn>
+                  <v-btn
                     @click="changeName = false"
                     variant="plain"
                     :ripple="false"
@@ -179,6 +151,7 @@
                   class="d-lg-flex align-center"
                 >
                   <v-text-field
+                    @keydown.enter.prevent="savePassword"
                     v-model="password"
                     label="Password"
                     :rules="passwordRules"
@@ -202,6 +175,14 @@
                       </div>
                     </template>
                   </v-text-field>
+                  <v-btn
+                    @click="savePassword"
+                    variant="text"
+                    class="ml-sm-1 text-green-lighten-1"
+                    :loading="loadingUpdatePassword"
+                  >
+                    Save
+                  </v-btn>
                   <v-btn
                     @click="changePassword = false"
                     variant="plain"
@@ -228,25 +209,30 @@
           <v-divider></v-divider>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
-
             <v-btn
-              text="Cancel"
-              variant="plain"
-              color="red-lighten-1"
-              class="px-3 my-1"
+              text="Ok"
+              variant="outlined"
+              color="success"
+              class="px-3 my-1 mx-auto"
               @click="$emit('cancel')"
             ></v-btn>
-
-            <v-btn
-              color="green-lighten-1"
-              text="Save"
-              variant="plain"
-              class="text-center mr-3 px-5 my-1"
-              append-icon="mdi-content-save"
-              @click="$emit('save', valid)"
-            ></v-btn>
           </v-card-actions>
+          <!-- transition -->
+          <v-scroll-x-transition>
+            <!-- alert -->
+            <v-alert
+              :model-value="showAlert"
+              :border="true"
+              :border-color="'white'"
+              :text="message"
+              :type="type"
+              :timeout="2000"
+              closable
+              transition="scroll-x-transition"
+              elevation="10"
+              class="mt-16 mx-1"
+            ></v-alert>
+          </v-scroll-x-transition>
         </v-form>
       </v-card>
     </v-dialog>
@@ -255,7 +241,7 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { db, storage } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { getUser } from "../composables/getUser";
 import {
@@ -264,13 +250,23 @@ import {
   getDownloadURL,
   uploadBytes,
 } from "firebase/storage";
+import { updatePassword } from "firebase/auth";
 //
 
+/*
+  Variables
+*/
+const message = ref(""); // for alert message
+const type = ref("success"); // for alter type
+//
 /*
   loaders
 */
 let loadingUploadProfilePhoto = ref(false);
 let loadingRemoveProfilePhoto = ref(false);
+let loadingUpdateName = ref(false);
+let loadingUpdatePassword = ref(false);
+
 //
 // v-models
 const profilePhoto = ref(null);
@@ -282,11 +278,11 @@ const PhotoUrl = ref(null); // to check if user have photo or not in firestore
 //
 // toggles
 const dialog = ref(true);
-let savedDialog = ref(false);
 const changeProfilePhoto = ref(false);
 const changeName = ref(false);
 const changePassword = ref(false);
 const showPassword = ref(false);
+const showAlert = ref(false); // to show alert when save changes
 //
 // user
 const { user } = { ...getUser() };
@@ -345,16 +341,40 @@ const uploadProfilePhoto = async () => {
           photoUrl: photoUrl,
         });
       }
-
-      savedDialog.value = true;
+      message.value = "Uploaded Successfully";
+      type.value = "success";
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+        message.value = "";
+        type.value = "";
+      }, 3000);
     } catch (err) {
-      console.log(err);
+      message.value = err.message;
+      type.value = "error";
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+        message.value = "";
+        type.value = "";
+      }, 3000);
     } finally {
       loadingUploadProfilePhoto = false;
       profilePhoto.value = null;
+      changeProfilePhoto.value = false;
     }
+  } else {
+    message.value = "Please select a photo";
+    type.value = "error";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
   }
 };
+//
 const removeProfilePhoto = async () => {
   if (PhotoUrl.value) {
     loadingRemoveProfilePhoto.value = true;
@@ -372,13 +392,121 @@ const removeProfilePhoto = async () => {
           photoUrl: "",
         });
       }
-      savedDialog.value = true;
       PhotoUrl.value = null;
+      // alert
+      message.value = "Removed Successfully";
+      type.value = "success";
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+        message.value = "";
+        type.value = "";
+      }, 3000);
     } catch (err) {
-      console.log(err);
+      message.value = err.message;
+      type.value = "error";
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+        message.value = "";
+        type.value = "";
+      }, 3000);
     } finally {
       loadingRemoveProfilePhoto.value = false;
+      changeProfilePhoto.value = false;
     }
+  } else {
+    message.value = "There is no Profile Photo to Remove";
+    type.value = "info";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+  }
+};
+//
+const saveName = async () => {
+  if (!firstName.value || !lastName.value) {
+    message.value = "First Name and Last Name is Required!!";
+    type.value = "error";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+    return;
+  }
+  //
+  loadingUpdateName.value = true;
+  const docRef = doc(db, "users", user.value.uid);
+  try {
+    await updateDoc(docRef, {
+      firstName: firstName.value,
+      lastName: lastName.value,
+    });
+    message.value = "Updated Successfully";
+    type.value = "success";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+  } catch (err) {
+    message.value = err.message;
+    type.value = "error";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+  } finally {
+    changeName.value = false;
+    loadingUpdateName.value = false;
+  }
+};
+//
+const savePassword = async () => {
+  if (!password.value) {
+    message.value = "Password is Required!!";
+    type.value = "error";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+    return;
+  }
+  //
+  loadingUpdatePassword.value = true;
+  try {
+    await updatePassword(auth.currentUser, password.value);
+    message.value = "Updated Successfully";
+    type.value = "success";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+    changePassword.value = false;
+    password.value = "";
+  } catch (err) {
+    message.value = err.message;
+    type.value = "error";
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      message.value = "";
+      type.value = "";
+    }, 3000);
+  } finally {
+    loadingUpdatePassword.value = false;
   }
 };
 //
@@ -391,7 +519,6 @@ onMounted(async () => {
       firstName.value = docSnap.data().firstName;
       lastName.value = docSnap.data().lastName;
       PhotoUrl.value = docSnap.data().photoUrl;
-      console.log("done");
     }
   } catch (err) {
     console.log(err);

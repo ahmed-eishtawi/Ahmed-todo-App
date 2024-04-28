@@ -170,7 +170,6 @@
           <EditAccount
             v-if="editDialog"
             @cancel="editDialog = false"
-            @save="saveChanges(valid)"
           />
         </v-col>
       </v-row>
@@ -186,10 +185,9 @@ import EditAccount from "../components/EditAccount";
 import Footer from "../components/Footer.vue";
 import { useThemeStore } from "../stores/useThemeStore";
 import { signOut } from "firebase/auth";
-import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { getUser } from "@/composables/getUser";
-import { onBeforeMount } from "vue";
 //
 const drawer = ref(null);
 const themeStore = useThemeStore();
@@ -230,15 +228,6 @@ const items = [
 */
 const { user } = { ...getUser() };
 const userData = ref(null);
-//
-/*
-  methods
-*/
-const saveChanges = (valid) => {
-  if (valid) {
-    // logic here
-  }
-};
 //
 /*
  lifeCycleHooks
