@@ -116,12 +116,27 @@
                 </div>
               </v-form>
             </v-crad-text>
-            <div
-              v-if="error"
-              class="text-center text-red-accent-4"
+            <!-- error Message -->
+            <v-snackbar
+              v-model="error"
+              multi-line
+              :timeout="3000"
+              rounded
+              color="red-accent-3"
             >
-              <h3>{{ error }}</h3>
-            </div>
+              {{ error || "" }}
+
+              <template v-slot:actions>
+                <v-btn
+                  color="white"
+                  variant="plain"
+                  @click="error = null"
+                  rounded
+                  :icon="'mdi-close'"
+                >
+                </v-btn>
+              </template>
+            </v-snackbar>
           </v-card>
         </v-col>
       </v-row>
@@ -155,7 +170,6 @@ let loadingGoogle = ref(false); // to show Loading in the button
 const email = ref("");
 const password = ref("");
 const error = ref(null);
-const valid = ref(false);
 //
 const emailRules = ref([
   (value) => {
@@ -210,16 +224,53 @@ onBeforeMount(async () => {
 const login = async () => {
   try {
     loading.value = true;
-    await signInWithEmailAndPassword(auth, email.value, password.value);
+    const res = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+    if (!res.user.emailVerified) {
+      throw new Error(
+        "Email not Verified yet, Please Check your Email Inbox and Verify your Account"
+      );
+    }
     loading.value = false;
     router.push({ name: "Todo List" });
   } catch (err) {
-    error.value = err.message;
-    console.log(err);
+    if (
+      err.message ===
+      "Email not Verified yet, Please Check your Email Inbox and Verify your Account"
+    ) {
+      error.value = err.message;
+      return;
+    }
+    const errorCode = err.code;
+    console.log(err.message);
+    switch (errorCode) {
+      case "auth/user-not-found":
+        error.value = "User not found. Please check your email.";
+        break;
+      case "auth/invalid-credential":
+        error.value = "Email or Password not correct";
+        break;
+      case "auth/invalid-email":
+        error.value = "Please enter a valid email address.";
+        break;
+      case "auth/email-already-in-use":
+        error.value = "This email address is already in use.";
+        break;
+      case "auth/operation-not-allowed":
+        error.value = "An error occurred. Please try again.";
+        break;
+      // Add more cases for other relevant error codes
+      default:
+        error.value = "An unknown error occurred. Please try again.";
+    }
   } finally {
     loading.value = false;
   }
 };
+//
 const loginWithGoogle = async () => {
   try {
     loadingGoogle.value = true;

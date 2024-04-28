@@ -156,12 +156,27 @@
                 </div>
               </v-form>
             </v-crad-text>
-            <div
-              v-if="error"
-              class="text-center text-red-accent-4"
+            <!-- error Message -->
+            <v-snackbar
+              v-model="error"
+              multi-line
+              :timeout="3000"
+              rounded
+              color="red-accent-3"
             >
-              <h3>{{ error }}</h3>
-            </div>
+              {{ error || "" }}
+
+              <template v-slot:actions>
+                <v-btn
+                  color="white"
+                  variant="plain"
+                  @click="error = null"
+                  rounded
+                  :icon="'mdi-close'"
+                >
+                </v-btn>
+              </template>
+            </v-snackbar>
           </v-card>
         </v-col>
       </v-row>
@@ -244,32 +259,63 @@ watch(dialog, () => {
     methods
 */
 const signUp = async () => {
-  if (valid.value) {
-    try {
-      loading.value = true;
-      const res = await createUserWithEmailAndPassword(
-        auth,
-        email.value,
-        password.value
-      );
-      res.user.displayName = `${firstName.value} ${lastName.value}`;
-      // save in firestore
-      const docRef = doc(db, "users", res.user.uid);
-      await setDoc(docRef, {
-        email: email.value,
-        firstName: firstName.value,
-        lastName: lastName.value,
-        photoUrl: res.user.photoURL,
-      });
-      //send email verification
-      await sendEmailVerification(auth.currentUser);
-      loading.value = false;
-      dialog.value = true;
-    } catch (err) {
-      error.value = err.message;
-    } finally {
-      loading.value = false;
+  try {
+    loading.value = true;
+    const res = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+    res.user.displayName = `${firstName.value} ${lastName.value}`;
+    // save in firestore
+    const docRef = doc(db, "users", res.user.uid);
+    await setDoc(docRef, {
+      email: email.value,
+      firstName: firstName.value,
+      lastName: lastName.value,
+      photoUrl: res.user.photoURL,
+    });
+    //send email verification
+    await sendEmailVerification(auth.currentUser);
+    loading.value = false;
+    dialog.value = true;
+  } catch (err) {
+    const errorCode = err.code;
+    console.log(err.message);
+    switch (errorCode) {
+      case "auth/user-not-found":
+        error.value = "User not found. Please check your email.";
+        break;
+      case "auth/invalid-credential":
+        error.value = "Email or Password not correct";
+        break;
+      case "auth/invalid-email":
+        error.value = "Please enter a valid email address.";
+        break;
+      case "auth/email-already-in-use":
+        error.value = "This email address is already in use.";
+        break;
+      case "auth/operation-not-allowed":
+        error.value = "An error occurred. Please try again.";
+        break;
+      case "auth/admin-restricted-operation":
+        error.value = "Email and Password is Required!";
+        break;
+      case "auth/missing-email":
+        error.value = "Missing Email!";
+        break;
+      case "auth/missing-password":
+        error.value = "Missing Password!";
+        break;
+      case "auth/weak-password":
+        error.value = "Password Must be at least 8 Characters";
+        break;
+      // Add more cases for other relevant error codes
+      default:
+        error.value = "An unknown error occurred. Please try again.";
     }
+  } finally {
+    loading.value = false;
   }
 };
 </script>

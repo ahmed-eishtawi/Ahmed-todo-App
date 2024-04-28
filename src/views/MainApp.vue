@@ -243,7 +243,6 @@ const saveChanges = (valid) => {
 /*
  lifeCycleHooks
 */
-onBeforeMount(() => {});
 onMounted(async () => {
   if (user.value) {
     try {

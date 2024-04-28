@@ -4,6 +4,8 @@
       transition="fab-transition"
       v-model="dialog"
       max-width="600"
+      fullscreen
+      persistent
     >
       <v-card>
         <template v-slot:title>
