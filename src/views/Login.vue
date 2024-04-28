@@ -278,11 +278,24 @@ const loginWithGoogle = async () => {
   try {
     loadingGoogle.value = true;
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-    // const credential = GoogleAuthProvider.credentialFromResult(res);
+    const res = await signInWithPopup(auth, provider);
+    // save in firestore
+    const docRef = doc(db, "users", res.user.uid);
+    const fullName = res.user.displayName.split(" ");
+    await setDoc(docRef, {
+      email: email.value,
+      firstName: fullName[0],
+      lastName: fullName[1],
+      photoUrl: res.user.photoURL,
+    });
+
+    router.push({ name: "Todo List" });
   } catch (err) {
-    error.value = GoogleAuthProvider.credentialFromError(err);
-    console.log(err);
+    if (err.code === "auth/popup-closed-by-user") {
+      error.value = "Popup Closed!";
+      return;
+    }
+    error.value = err.message;
   } finally {
     loadingGoogle.value = false;
   }
